@@ -35,7 +35,7 @@ typedef struct converted_mp3
 {
 	int write;
 	int order;
-	std::vector<unsigned char> mp3_buffer;
+	unsigned char mp3_buffer[MP3_SIZE];
 };
 class assembler :public conversion_block
 {
@@ -87,7 +87,7 @@ public:
 	converter();
 	converter(conversion_block input);
 	~converter();
-	converted_mp3 encode_mp3(conversion_block input);
+	converted_mp3 encode_mp3();
 
 private:
 	bool set;
