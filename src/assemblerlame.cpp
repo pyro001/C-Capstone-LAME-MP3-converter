@@ -6,11 +6,14 @@ void assembler::run()
 { lameParams _prms= this->get_lame_params(meta);
 	int read;
 	int order_var = 0;
+	std::vector<converted_mp3> writefile;
+	std::vector<std::future<converted_mp3>> futures;
+
 	do
 	{
 		std::vector<short int> buffer(2*WAV_SIZE);
 		read = fread(&buffer[0], 2 * sizeof(short int), WAV_SIZE, _inputfile);
-	
+		
 		_total_blocks++;
 		order_var++;
 		conversion_block temp;
@@ -18,18 +21,25 @@ void assembler::run()
 		temp.order = order_var;
 		temp.pcmbuffer = buffer;
 		temp._params = _prms;
+		std::cout << temp.readlength;
 		this->_converter_data.emplace_back(temp);
+		converter _conv_temp(temp);
+		futures.emplace_back(std::async(&(converter::encode_mp3), _conv_temp, std::move(temp)));
 	} while (read != 0);
 	//now the whole vector should be full of building block structures which are enough to run encoding on
-	std::vector<std::future<converted_mp3>> futures;
-	for (int i = 1; i < (this->_converter_data.size())+1; i++)
+	
+	while (!futures.empty())
 	{
-		auto a=_converter_data.at(i);
-		converter _conv_temp(a);
-		
-		futures.emplace_back(std::async(&(converter::encode_mp3),_conv_temp,std::move(a)));
+		auto& a = futures.front();
+		a.wait();
+		auto temp_write_conv = a.get();
+		writefile.emplace_back(temp_write_conv);
+		futures.erase(futures.begin());
+		std::cout<<	temp_write_conv.order<<"\t::\t"<<temp_write_conv.write<<std::endl;
+		fwrite(&(temp_write_conv.mp3_buffer[0]), temp_write_conv.write, 1, _opfile);
 	}
 	
+
 }
 
 void assembler::reset_mp3()
@@ -69,7 +79,7 @@ void assembler::setWavformat()
 {
 	if (_inputfile)
 	{
-		auto a = fread(meta, 1, sizeof(wavFormat), _inputfile);
+		fread(meta, 1, sizeof(wavFormat), _inputfile);
 	}
 }
 
@@ -141,6 +151,9 @@ converted_mp3 converter::encode_mp3(conversion_block input)
 	lame_set_VBR_mean_bitrate_kbps(lame, 128);
 	int write;
 	lame_set_VBR_q(lame, 0);
+	lck.lock();
+	std::cout << "\t:\t" << input.pcmbuffer.size() << "\t:\t" << input.readlength;
+	lck.unlock();
 	std::vector<unsigned char> mp3_buffer(MP3_SIZE);
 	if (this->_conversion_block.readlength == 0)
 

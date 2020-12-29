@@ -37,7 +37,7 @@ typedef struct converted_mp3
 	int order;
 	std::vector<unsigned char> mp3_buffer;
 };
-class assembler:public conversion_block
+class assembler :public conversion_block
 {
 
 public:
@@ -84,6 +84,7 @@ private:
 class converter 
 {
 public:
+	converter();
 	converter(conversion_block input);
 	~converter();
 	converted_mp3 encode_mp3(conversion_block input);
@@ -92,7 +93,7 @@ private:
 	bool set;
 	conversion_block _conversion_block;
 	converted_mp3 _converted;
-
+	std::mutex lck;
 };
 
 
