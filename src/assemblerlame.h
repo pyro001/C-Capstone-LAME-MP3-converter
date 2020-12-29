@@ -12,46 +12,89 @@
 #include <mutex>
 enum converter_quality
 {
-    perfect = 0,
-    good = 2,
-    acceptable = 5
+	perfect = 0,
+	good = 2,
+	acceptable = 5
 };
-class assembler
+
+typedef struct lameParams
 {
-private:
-    FILE* _inputfile;
-    std::vector<short int[MP3_SIZE * 2]>  mp3_vect;
-    struct wavFormat
-    {
-        char chunk_id[4];
-        int chunk_size;
-        char format[4];
-        char subchunk1_id[4];
-        int subchunk1_size;
-        short int audio_format;
-        short int num_channels;
-        int sample_rate; // sample_rate denotes the sampling rate.
-        int byte_rate;
-        short int block_align;
-        short int bits_per_sample;
-        char subchunk2_id[4];
-        int subchunk2_size;
-    };
-    wavFormat _wavfmt;
-    struct lameParams
-    {
-        int bit_rate;
-        int vbr_q;
-        int samples;
-    };
-    lameParams _lamePrms;
-    /* data */
-public:
-    assembler(/* args */);
-    void setWavformat(FILE * inputFile );
-    assembler(FILE _input, int vbr, int quality);
-    ~assembler();
+	MPEG_mode channel;
+	int bit_rate;
+	int vbr_q;
+	int samplerate;
 };
+typedef struct conversion_block
+{
+	int readlength;
+	lameParams _params;
+	std::vector<short int> pcmbuffer;
+	int order;
+};
+typedef struct converted_mp3
+{
+	int write;
+	int order;
+	std::vector<unsigned char> mp3_buffer;
+};
+class assembler:public conversion_block
+{
+
+public:
+	typedef struct wavFormat
+	{
+		char chunk_id[4];
+		int chunk_size;
+		char format[4];
+		char subchunk1_id[4];
+		int subchunk1_size;
+		short int audio_format;
+		short int num_channels;
+		int sample_rate; // sample_rate denotes the sampling rate.
+		int byte_rate;
+		short int block_align;
+		short int bits_per_sample;
+		char subchunk2_id[4];
+		int subchunk2_size;
+	};
+
+	typedef struct wavFormat* _wavfmt;
+	assembler(std::string input, std::string op);
+	void run();
+	void reset_mp3();
+	lameParams get_lame_params(_wavfmt input);
+	void setWavformat();
+	assembler();
+	~assembler();
+
+private:
+	FILE* _inputfile;
+	FILE* _opfile;
+	int _total_blocks;
+	int _complete_bocks;
+	float _completion_percentage;
+	_wavfmt meta = (_wavfmt)malloc(sizeof(wavFormat));
+
+	lameParams _lamePrms;
+	std::vector<converted_mp3> _mp3Construct;
+	std::vector<conversion_block> _converter_data;
+};
+
+
+class converter 
+{
+public:
+	converter(conversion_block input);
+	~converter();
+	converted_mp3 encode_mp3(conversion_block input);
+
+private:
+	bool set;
+	conversion_block _conversion_block;
+	converted_mp3 _converted;
+
+};
+
 
 
 
