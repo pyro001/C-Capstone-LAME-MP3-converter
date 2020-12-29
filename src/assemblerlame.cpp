@@ -25,8 +25,9 @@ void assembler::run()
 	for (int i = 1; i < (this->_converter_data.size())+1; i++)
 	{
 		auto a=_converter_data.at(i);
+		converter _conv_temp(a);
 		
-		futures.emplace_back(std::async(std::launch::async, std::bind(converter::encode_mp3),this,a));
+		futures.emplace_back(std::async(&(converter::encode_mp3),_conv_temp,std::move(a)));
 	}
 	
 }

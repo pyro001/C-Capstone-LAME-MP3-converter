@@ -38,3 +38,5 @@ out/build/x64-Debug (default)/.cmake/
 out/build/x64-Debug (default)/CMakeFiles/
 
 out/
+
+.vs/
