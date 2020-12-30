@@ -1,5 +1,5 @@
 #include "assemblerlame.h"
-
+#include <cstring>
 #include <future>
 
 void assembler::run()
@@ -12,7 +12,7 @@ void assembler::run()
 	std::vector<std::future<converted_mp3>> futures;
 	short int buffer[2 * WAV_SIZE];
 
-	std::vector<converter*> _conversion_block_object_db;
+	std::vector<converter *> _conversion_block_object_db;
 	do
 	{
 		std::cout << "looping though vectors \n";
@@ -23,23 +23,22 @@ void assembler::run()
 		conversion_block temp;
 		temp.readlength = read;
 		temp.order = order_var;
-		std::memcpy(temp.pcmbuffer, buffer, 2 * sizeof(short int) * MP3_SIZE); ;
+		std::memcpy(temp.pcmbuffer, buffer, 2 * sizeof(short int) * MP3_SIZE);
+		;
 		temp._params = _prms;
 		//std::cout << temp.readlength;
 		this->_converter_data.emplace_back(temp);
-		converter* _conv_temp = new converter(temp);
+		converter *_conv_temp = new converter(temp);
 		_conversion_block_object_db.push_back(_conv_temp);
-		futures.push_back(std::async(std::launch::async, &(converter::encode_mp3), _conv_temp));
+		futures.push_back(std::async(std::launch::async, &(converter::encode_mp3), std::move(_conv_temp)));
 
 	} while (read != 0);
 	//now the whole vector should be full of building block structures which are enough to run encoding on
-//	for(auto &i:_conversion_block_object_db)
+	//	for(auto &i:_conversion_block_object_db)
 
-
-	for (auto& iterator_futures : futures)
+	for (auto &iterator_futures : futures)
 	{
 		//futures.emplace_back(std::async(std::launch::async, &(converter::encode_mp3), _conv_temp, (temp)));
-		
 
 		auto temp_write_conv = iterator_futures.get();
 		if (temp_write_conv.write > 0 && temp_write_conv.order > 0)
@@ -50,11 +49,9 @@ void assembler::run()
 
 			fwrite((temp_write_conv.mp3_buffer), temp_write_conv.write, 1, _opfile);
 		}
-		
 	}
-	for (auto& i : _conversion_block_object_db)
-		delete(i);
-
+	for (auto &i : _conversion_block_object_db)
+		delete (i);
 }
 
 void assembler::reset_mp3()
@@ -88,30 +85,41 @@ void assembler::setWavformat()
 	if (_inputfile)
 	{
 		fread(meta, 1, sizeof(wavFormat), _inputfile);
+
+		fclose(_inputfile);
 	}
-	fclose(_inputfile);
-	fopen(_input.c_str(), "rb");
+	else
+	{
+
+		_inputfile = fopen(_input.c_str(), "rb");
+		if (_inputfile)
+		{
+			fread(meta, 1, sizeof(wavFormat), _inputfile);
+
+			fclose(_inputfile);
+		}
+	}
+	_inputfile = fopen(_input.c_str(), "rb");
 }
 
 assembler::assembler()
 {
-	if (WIN32)
-	{
-		_input = "E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav";
-		this->_inputfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav", "rb");
-		this->_opfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.mp3", "wb");
-	}
-	else
-	{
-		_input = "testcase.wav";
-		this->_inputfile = fopen("testcase.wav", "rb");
-		this->_opfile = fopen("testcase.mp3", "wb");
-	}
+	// if (WIN32)
+	// {
+	// 	_input = "E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav";
+	// 	this->_inputfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav", "rb");
+	// 	this->_opfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.mp3", "wb");
+	// }
+	// else
+	// {
+	_input = "testcase.wav";
+	this->_inputfile = fopen("testcase.wav", "rb");
+	this->_opfile = fopen("testcase.mp3", "wb");
+	// }
 	_total_blocks = 1;
 	_complete_bocks = 0;
 	_completion_percentage = 0;
 }
-
 
 assembler::assembler(std::string input, std::string op)
 {
@@ -126,9 +134,7 @@ assembler::assembler(std::string input, std::string op)
 
 		this->_opfile = fopen(op.c_str(), "wb");
 	}
-
 }
-
 
 assembler::~assembler()
 {
@@ -136,9 +142,6 @@ assembler::~assembler()
 	fclose(_inputfile);
 	fclose(_opfile);
 }
-
-
-
 
 converter::converter()
 {
@@ -174,7 +177,7 @@ converted_mp3 converter::encode_mp3()
 {
 
 	lame_t lame = lame_init();
-	lame_set_in_samplerate(lame, (this->_conversion_block._params.samplerate)/2);
+	lame_set_in_samplerate(lame, (this->_conversion_block._params.samplerate) / 2);
 	lame_set_VBR(lame, vbr_default);
 	int write;
 	lame_set_VBR_q(lame, 0);
@@ -188,7 +191,6 @@ converted_mp3 converter::encode_mp3()
 
 	{
 		write = lame_encode_flush(lame, mp3_arr, MP3_SIZE);
-
 	}
 	else
 	{
@@ -200,6 +202,3 @@ converted_mp3 converter::encode_mp3()
 	this->_converted.write = write;
 	return this->_converted;
 }
-
-
-

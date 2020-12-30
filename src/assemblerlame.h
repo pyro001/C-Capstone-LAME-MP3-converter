@@ -17,21 +17,21 @@ enum converter_quality
 	acceptable = 5
 };
 
-typedef struct lameParams
+struct lameParams
 {
 	MPEG_mode channel;
 	int bit_rate;
 	int vbr_q;
 	int samplerate;
 };
-typedef struct conversion_block
+struct conversion_block
 {
 	int readlength;
 	lameParams _params;
 	short int pcmbuffer[WAV_SIZE*2];
 	int order;
 };
-typedef struct converted_mp3
+struct converted_mp3
 {
 	int write;
 	int order;
@@ -41,7 +41,7 @@ class assembler :public conversion_block
 {
 
 public:
-	typedef struct wavFormat
+	struct wavFormat
 	{
 		char chunk_id[4];
 		int chunk_size;
