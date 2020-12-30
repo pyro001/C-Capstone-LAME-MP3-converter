@@ -27,7 +27,6 @@ void assembler::run()
 		;
 		temp._params = _prms;
 		//std::cout << temp.readlength;
-		this->_converter_data.emplace_back(temp);
 		converter *_conv_temp = new converter(temp);
 		_conversion_block_object_db.push_back(_conv_temp);
 		futures.push_back(std::async(std::launch::async, &(converter::encode_mp3), _conv_temp));
