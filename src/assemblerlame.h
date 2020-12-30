@@ -28,7 +28,7 @@ typedef struct conversion_block
 {
 	int readlength;
 	lameParams _params;
-	std::vector<short int> pcmbuffer;
+	short int pcmbuffer[WAV_SIZE*2];
 	int order;
 };
 typedef struct converted_mp3
@@ -69,6 +69,7 @@ public:
 
 private:
 	FILE* _inputfile;
+	std::string _input;
 	FILE* _opfile;
 	int _total_blocks;
 	int _complete_bocks;
