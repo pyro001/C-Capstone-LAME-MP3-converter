@@ -30,7 +30,7 @@ void assembler::run()
 		this->_converter_data.emplace_back(temp);
 		converter *_conv_temp = new converter(temp);
 		_conversion_block_object_db.push_back(_conv_temp);
-		futures.push_back(std::async(std::launch::async, &(converter::encode_mp3), std::move(_conv_temp)));
+		futures.push_back(std::async(std::launch::async, &(converter::encode_mp3), _conv_temp));
 
 	} while (read != 0);
 	//now the whole vector should be full of building block structures which are enough to run encoding on
@@ -41,17 +41,22 @@ void assembler::run()
 		//futures.emplace_back(std::async(std::launch::async, &(converter::encode_mp3), _conv_temp, (temp)));
 
 		auto temp_write_conv = iterator_futures.get();
+
 		if (temp_write_conv.write > 0 && temp_write_conv.order > 0)
 		{
 			writefile.emplace_back(temp_write_conv);
-
-			std::cout << sizeof(temp_write_conv.mp3_buffer) << "\t::\t" << temp_write_conv.write << std::endl;
-
-			fwrite((temp_write_conv.mp3_buffer), temp_write_conv.write, 1, _opfile);
 		}
 	}
 	for (auto &i : _conversion_block_object_db)
 		delete (i);
+	std::sort(writefile.begin(),writefile.end());
+	for(auto &i:writefile)
+	{
+
+			std::cout << sizeof(i.mp3_buffer) << "\t::\t" << i.write << std::endl;
+
+			fwrite((i.mp3_buffer), i.write, 1, _opfile);
+	}
 }
 
 void assembler::reset_mp3()

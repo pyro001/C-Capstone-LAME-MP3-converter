@@ -7,9 +7,9 @@
 #include <thread>
 #include <vector>
 #include <iostream>
-#include <dirent.h>
 #include <future>
 #include <mutex>
+#include<algorithm>
 enum converter_quality
 {
 	perfect = 0,
@@ -36,7 +36,12 @@ struct converted_mp3
 	int write;
 	int order;
 	unsigned char mp3_buffer[MP3_SIZE];
+	
 };
+bool compareByLength(const converted_mp3 &a, const converted_mp3 &b)
+{
+    return a.order < b.order;
+}
 class assembler :public conversion_block
 {
 
