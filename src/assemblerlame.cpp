@@ -53,7 +53,7 @@ void assembler::run()
 	for(auto &i:writefile)
 	{
 
-			std::cout << sizeof(i.mp3_buffer) << "\t::\t" << i.write << std::endl;
+			std::cout << i.write << "\t::\t" << i.order << std::endl;
 
 			fwrite((i.mp3_buffer), i.write, 1, _opfile);
 	}
@@ -109,18 +109,18 @@ void assembler::setWavformat()
 
 assembler::assembler()
 {
-	// if (WIN32)
-	// {
-	// 	_input = "E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav";
-	// 	this->_inputfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav", "rb");
-	// 	this->_opfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.mp3", "wb");
-	// }
-	// else
-	// {
+	 if (WIN32)
+	 {
+	 	_input = "E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav";
+	 	this->_inputfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav", "rb");
+	 	this->_opfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.mp3", "wb");
+	 }
+	 else
+	 {
 	_input = "testcase.wav";
 	this->_inputfile = fopen("testcase.wav", "rb");
 	this->_opfile = fopen("testcase.mp3", "wb");
-	// }
+	}
 	_total_blocks = 1;
 	_complete_bocks = 0;
 	_completion_percentage = 0;

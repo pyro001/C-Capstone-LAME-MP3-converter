@@ -36,12 +36,14 @@ struct converted_mp3
 	int write;
 	int order;
 	unsigned char mp3_buffer[MP3_SIZE];
+
+	bool operator<(const converted_mp3& a) const
+	{
+		return order < a.order;
+	}
 	
 };
-bool compareByLength(const converted_mp3 &a, const converted_mp3 &b)
-{
-    return a.order < b.order;
-}
+
 class assembler :public conversion_block
 {
 
