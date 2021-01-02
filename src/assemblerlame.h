@@ -7,9 +7,24 @@
 #include <thread>
 #include <vector>
 #include <iostream>
-#include <future>
 #include <mutex>
 #include<algorithm>
+#include <cstring>
+#include <future>
+#include <functional>
+#include <deque>
+
+template <class T>
+class MessageQueue
+{
+public:
+	void send(T&& msg);
+	T receive(void);
+private:
+	std::deque<T> _queue;
+	std::mutex _commlock;
+	std::condition_variable _condition;
+};
 enum converter_quality
 {
 	perfect = 0,
@@ -28,7 +43,7 @@ struct conversion_block
 {
 	int readlength;
 	lameParams _params;
-	short int pcmbuffer[WAV_SIZE*2];
+	short int pcmbuffer[WAV_SIZE * 2];
 	int order;
 };
 struct converted_mp3
@@ -41,10 +56,21 @@ struct converted_mp3
 	{
 		return order < a.order;
 	}
+
+};
+struct status
+{
+	int total;
+	int completed;
 	
+	bool operator<(const status& a) const
+	{
+		return total < a.total;
+	}
+
 };
 
-class assembler :public conversion_block
+class assembler 
 {
 
 public:
@@ -68,6 +94,7 @@ public:
 	typedef struct wavFormat* _wavfmt;
 	assembler(std::string input, std::string op);
 	void run();
+	status get_state();
 	void reset_mp3();
 	lameParams get_lame_params(_wavfmt input);
 	void setWavformat();
@@ -76,20 +103,24 @@ public:
 
 private:
 	FILE* _inputfile;
+	std::mutex lck;
 	std::string _input;
 	FILE* _opfile;
 	int _total_blocks;
 	int _complete_bocks;
 	float _completion_percentage;
+	status _status;
 	_wavfmt meta = (_wavfmt)malloc(sizeof(wavFormat));
 
 	lameParams _lamePrms;
 	std::vector<converted_mp3> _mp3Construct;
 	std::vector<conversion_block> _converter_data;
+	std::condition_variable _condition;
+	MessageQueue <status> _queue;
 };
 
 
-class converter 
+class converter
 {
 public:
 	converter();

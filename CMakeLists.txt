@@ -9,6 +9,13 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O2 --std=c++17 -pthread -Wall -flto" )
 
 enable_language(CXX)
 if(UNIX)
+     message( "in the core: UNIX found")
+    add_custom_target(
+                apt-downloads ALL
+                COMMAND sudo apt install -y lame
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                COMMENT "download required dependencies straight from apt on ubuntu"
+                )
 	find_package(Lame REQUIRED)
 	find_package (Threads REQUIRED)
 	set(LIBS ${LIBS} ${LAME_LIBRARIES} Threads::Threads)

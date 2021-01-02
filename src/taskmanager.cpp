@@ -1,13 +1,23 @@
 #include "taskmanager.h"
 
-template<class T>
-inline void MessageQueue<T>::send(T&& msg)
+
+
+filehandler::filehandler()
 {
 }
 
-template<class T>
-T MessageQueue<T>::receive(void)
+filehandler::filehandler(std::string address)
 {
-	return T();
 }
 
+void filehandler::thread_handler()
+{
+}
+
+void filehandler::run()
+{
+}
+
+filehandler::~filehandler()
+{
+}

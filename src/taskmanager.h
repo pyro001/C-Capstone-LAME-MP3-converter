@@ -2,33 +2,21 @@
 #define TASKMANAGER_H_
 #include <future>
 #include <mutex>
-#include <deque>
-template <class T>
-class MessageQueue
+#include <string>
+#include "assemblerlame.h"
+class filehandler
 {
 public:
-    void send(T&& msg);
-    T receive(void);
+	filehandler();
+	filehandler(std::string address);
+	void thread_handler(); //updates threads
+	void run();//
+	~filehandler();
+
 private:
-    std::deque<T> _queue;
-    std::mutex _commlock;
-    std::condition_variable _condition;
-};
-class mp3fileunit
-{
-private:
-    /* data */
-public:
-    mp3fileunit(/* args */);
-    ~mp3fileunit();
+	std::string _input_address;
+	static int _threads_available;
 };
 
-mp3fileunit::mp3fileunit(/* args */)
-{
-}
-
-mp3fileunit::~mp3fileunit()
-{
-}
 
 #endif
