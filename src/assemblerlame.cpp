@@ -40,7 +40,7 @@ void assembler::run()// uses 73920 bytes of stack needs heap memory movement
 	std::vector<converter*> _conversion_block_object_db;
 	while (read != 0)
 	{
-		std::cout << "looping though vectors \n";
+		//std::cout << "looping though vectors \n";
 		read = fread(buffer, 2 * sizeof(short int), WAV_SIZE, _inputfile);
 		this->_status.total++;
 		order_var++;
@@ -77,7 +77,7 @@ void assembler::run()// uses 73920 bytes of stack needs heap memory movement
 	for (auto& i : writefile)
 	{
 		this->_status.completed++;
-		std::cout << i.write << "\t::\t" << i.order << std::endl;
+		//std::cout << i.write << "\t::\t" << i.order << std::endl;
 
 		fwrite((i.mp3_buffer), (i.write), 1, _opfile);
 
@@ -91,7 +91,7 @@ status assembler::get_state()
 {
 	auto futuremsg = std::async(std::launch::async, &MessageQueue<status>::receive, &_queue);
 	status resp = futuremsg.get();
-	std::cout << resp.completed << "\t::\t" << resp.total << std::endl;
+	std::cout <<"Completed " <<resp.completed << "\t: parts out of:\t" << resp.total << std::endl;
 	return status(resp);
 }
 
@@ -169,13 +169,13 @@ assembler::assembler()
 	std::ifstream in_file(_input, std::ios::binary);
 	in_file.seekg(0, std::ios::end);
 	int file_size = in_file.tellg();
-	std::cout << "Size of the file is" << " " << file_size << " " << "bytes" << std::endl;
+	//std::cout << "Size of the file is" << " " << file_size << " " << "bytes" << std::endl;
 }
 
 assembler::assembler(std::string input, std::string op)
 {
 	this->_input = input;
-	std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
+	//std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
 	_total_blocks = 0;
 	_complete_bocks = 0;
 	_completion_percentage = 0;
@@ -190,7 +190,7 @@ assembler::assembler(std::string input, std::string op)
 assembler::~assembler()
 {
 	std::lock_guard<std::mutex> lckgrd(lck);
-	std::cout << "\n DESTRUCTOR ASSEMBLER|N\n";
+	//std::cout << "\n DESTRUCTOR ASSEMBLER|N\n";
 	fclose(_inputfile);
 	fclose(_opfile);
 }
@@ -198,7 +198,7 @@ assembler::~assembler()
 converter::converter()
 {
 	std::lock_guard<std::mutex> lckgrd(lck);
-	std::cout << "\n CONSTRUCTOR ASSEMBLER|N\n";
+	//std::cout << "\n CONSTRUCTOR ASSEMBLER|N\n";
 }
 
 converter::converter(conversion_block input)
@@ -215,18 +215,18 @@ converter::converter(conversion_block input)
 		converter::set = true;
 		std::lock_guard<std::mutex> lckgrd(lck);
 
-		std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
+		//std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
 	}
 	else
 	{
-		std::cout << sizeof(input.pcmbuffer) << std::endl;
+	///	std::cout << sizeof(input.pcmbuffer) << std::endl;
 	}
 }
 
 converter::~converter()
 {
 	std::lock_guard<std::mutex> lckgrd(lck);
-	std::cout << "\n DESTRUCTOR block_ Converter|N\n";
+	//std::cout << "\n DESTRUCTOR block_ Converter|N\n";
 }
 
 converted_mp3 converter::encode_mp3()
