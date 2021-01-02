@@ -1,52 +1,65 @@
 #include "assemblerlame.h"
+#include<fstream>
 
-template<class T>
-inline void MessageQueue<T>::send(T&& msg)
+template <typename T>
+T MessageQueue<T>::receive()
 {
+	
+	std::unique_lock<std::mutex> uLock(_commlock);
+	_condition.wait(uLock, [this] {return(!_queue.empty()); });
+	T retval = std::move(_queue.front());
+	
+	_queue.pop_front();
+	return retval;
+	//The method receive should use std::unique_lock<std::mutex> and _condition.wait() 
+	// to wait for and receive new messages and pull them from the queue using move semantics. 
+	// The received object should then be returned by the receive function. 
 }
 
-template<class T>
-T MessageQueue<T>::receive(void)
+template <typename T>
+void MessageQueue<T>::send(T&& msg)
 {
-	return T();
+	std::lock_guard<std::mutex> lckgrd(_commlock);
+	_queue.emplace_back(msg);
+	_condition.notify_one();
+	//The method send should use the mechanisms std::lock_guard<std::mutex> 
+	// as well as _condition.notify_one() to add a new message to the queue and afterwards send a notification.
 }
 
-void assembler::run()
+
+void assembler::run()// uses 73920 bytes of stack needs heap memory movement
 {
 	this->setWavformat();
 	lameParams _prms = this->get_lame_params(meta);
-	int read;
+	int read = 1;
 	int order_var = 0;
 	std::vector<converted_mp3> writefile;
 	std::vector<std::future<converted_mp3>> futures;
 	short int buffer[2 * WAV_SIZE];
 
-	std::vector<converter *> _conversion_block_object_db;
-	do
+	std::vector<converter*> _conversion_block_object_db;
+	while (read != 0)
 	{
 		std::cout << "looping though vectors \n";
 		read = fread(buffer, 2 * sizeof(short int), WAV_SIZE, _inputfile);
-
-		_total_blocks++;
+		this->_status.total++;
 		order_var++;
 		conversion_block temp;
 		temp.readlength = read;
 		temp.order = order_var;
 		std::memcpy(temp.pcmbuffer, buffer, 2 * sizeof(short int) * MP3_SIZE);
-		
+
 		temp._params = _prms;
 		//std::cout << temp.readlength;
-		converter *_conv_temp = new converter(temp);
-		_conversion_block_object_db.push_back(_conv_temp);
+		converter* _conv_temp = new converter(temp);
+		_conversion_block_object_db.push_back(_conv_temp);//TODO : needs to be make unique add copy constructor
 		//courtesy:https://stackoverflow.com/questions/48857679/stdasync-with-class-member-function
 		futures.push_back(std::async(std::launch::async, std::bind(&converter::encode_mp3, _conv_temp)));
+		auto ftr = std::async(std::launch::async, &MessageQueue<status>::send, &_queue, std::move(_status));
 
-
-	} while (read != 0);
+	}
 	//now the whole vector should be full of building block structures which are enough to run encoding on
-	//	for(auto &i:_conversion_block_object_db)
-
-	for (auto &iterator_futures : futures)
+	for (auto& iterator_futures : futures)
 	{
 		//futures.emplace_back(std::async(std::launch::async, &(converter::encode_mp3), _conv_temp, (temp)));
 
@@ -57,16 +70,29 @@ void assembler::run()
 			writefile.emplace_back(temp_write_conv);
 		}
 	}
-	for (auto &i : _conversion_block_object_db)
+	for (auto& i : _conversion_block_object_db)
 		delete (i);
-	std::sort(writefile.begin(),writefile.end());
-	for(auto &i:writefile)
+	this->_status.completed++;
+	std::sort(writefile.begin(), writefile.end());
+	for (auto& i : writefile)
 	{
+		this->_status.completed++;
+		std::cout << i.write << "\t::\t" << i.order << std::endl;
 
-			std::cout << i.write << "\t::\t" << i.order << std::endl;
+		fwrite((i.mp3_buffer), (i.write), 1, _opfile);
 
-			fwrite((i.mp3_buffer), (i.write), 1, _opfile);
+		auto ftr = std::async(std::launch::async, &MessageQueue<status>::send, &_queue, std::move(_status));
+
 	}
+
+}
+
+status assembler::get_state()
+{
+	auto futuremsg = std::async(std::launch::async, &MessageQueue<status>::receive, &_queue);
+	status resp = futuremsg.get();
+	std::cout << resp.completed << "\t::\t" << resp.total << std::endl;
+	return status(resp);
 }
 
 void assembler::reset_mp3()
@@ -119,28 +145,33 @@ void assembler::setWavformat()
 
 assembler::assembler()
 {
-	 if (WIN32)
-	 {
-	 	_input = "E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav";
-	 	this->_inputfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav", "rb");
-	 	this->_opfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.mp3", "wb");
-	 }
-	 else
-	 {
-	_input = "testcase.wav";
-	this->_inputfile = fopen("testcase.wav", "rb");
-	this->_opfile = fopen("testcase.mp3", "wb");
+	if (WIN32)
+	{
+		_input = "E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav";
+		this->_inputfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav", "rb");
+		this->_opfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.mp3", "wb");
 	}
-	_total_blocks = 1;
+	else
+	{
+		_input = "testcase.wav";
+		this->_inputfile = fopen("testcase.wav", "rb");
+		this->_opfile = fopen("testcase.mp3", "wb");
+	}
+	_total_blocks =0;
 	_complete_bocks = 0;
-	_completion_percentage = 0;
+	this->_status.completed = 0;
+	this->_status.total = 0;
+	std::ifstream in_file(_input, std::ios::binary);
+	in_file.seekg(0, std::ios::end);
+	int file_size = in_file.tellg();
+	std::cout << "Size of the file is" << " " << file_size << " " << "bytes" << std::endl;
 }
 
 assembler::assembler(std::string input, std::string op)
 {
 	this->_input = input;
 	std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
-	_total_blocks = 1;
+	_total_blocks = 0;
 	_complete_bocks = 0;
 	_completion_percentage = 0;
 	if (!input.empty() && !op.empty())
