@@ -145,13 +145,18 @@ void assembler::setWavformat()
 
 assembler::assembler()
 {
-	if (WIN32)
+	
+	
+	
+	
+	 
+	#if defined(WIN32)
 	{
 		_input = "E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav";
 		this->_inputfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav", "rb");
 		this->_opfile = fopen("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.mp3", "wb");
 	}
-	else
+	#endif //
 	{
 		_input = "testcase.wav";
 		this->_inputfile = fopen("testcase.wav", "rb");
