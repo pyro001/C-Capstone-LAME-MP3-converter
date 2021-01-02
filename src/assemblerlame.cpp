@@ -1,6 +1,15 @@
 #include "assemblerlame.h"
-#include <cstring>
-#include <future>
+
+template<class T>
+inline void MessageQueue<T>::send(T&& msg)
+{
+}
+
+template<class T>
+T MessageQueue<T>::receive(void)
+{
+	return T();
+}
 
 void assembler::run()
 {
@@ -24,12 +33,14 @@ void assembler::run()
 		temp.readlength = read;
 		temp.order = order_var;
 		std::memcpy(temp.pcmbuffer, buffer, 2 * sizeof(short int) * MP3_SIZE);
-		;
+		
 		temp._params = _prms;
 		//std::cout << temp.readlength;
 		converter *_conv_temp = new converter(temp);
 		_conversion_block_object_db.push_back(_conv_temp);
-		futures.push_back(std::async(std::launch::async, &(converter::encode_mp3), _conv_temp));
+		//courtesy:https://stackoverflow.com/questions/48857679/stdasync-with-class-member-function
+		futures.push_back(std::async(std::launch::async, std::bind(&converter::encode_mp3, _conv_temp)));
+
 
 	} while (read != 0);
 	//now the whole vector should be full of building block structures which are enough to run encoding on
@@ -54,7 +65,7 @@ void assembler::run()
 
 			std::cout << i.write << "\t::\t" << i.order << std::endl;
 
-			fwrite((i.mp3_buffer), i.write, 1, _opfile);
+			fwrite((i.mp3_buffer), (i.write), 1, _opfile);
 	}
 }
 
@@ -142,6 +153,7 @@ assembler::assembler(std::string input, std::string op)
 
 assembler::~assembler()
 {
+	std::lock_guard<std::mutex> lckgrd(lck);
 	std::cout << "\n DESTRUCTOR ASSEMBLER|N\n";
 	fclose(_inputfile);
 	fclose(_opfile);
@@ -149,12 +161,12 @@ assembler::~assembler()
 
 converter::converter()
 {
+	std::lock_guard<std::mutex> lckgrd(lck);
 	std::cout << "\n CONSTRUCTOR ASSEMBLER|N\n";
 }
 
 converter::converter(conversion_block input)
 {
-	std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
 	if (sizeof(input.pcmbuffer) != 0 && input.readlength != 0)
 	{
 
@@ -165,6 +177,9 @@ converter::converter(conversion_block input)
 		this->_converted.order = this->_conversion_block.order;
 
 		converter::set = true;
+		std::lock_guard<std::mutex> lckgrd(lck);
+
+		std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
 	}
 	else
 	{
@@ -174,12 +189,13 @@ converter::converter(conversion_block input)
 
 converter::~converter()
 {
-	std::cout << "\n DESTRUCTOR block_|N\n";
+	std::lock_guard<std::mutex> lckgrd(lck);
+	std::cout << "\n DESTRUCTOR block_ Converter|N\n";
 }
 
 converted_mp3 converter::encode_mp3()
 {
-
+	std::lock_guard<std::mutex> lckgrd(lck);
 	lame_t lame = lame_init();
 	lame_set_in_samplerate(lame, (this->_conversion_block._params.samplerate) / 2);
 	lame_set_VBR(lame, vbr_default);
@@ -201,6 +217,11 @@ converted_mp3 converter::encode_mp3()
 		write = lame_encode_buffer_interleaved(lame, this->_conversion_block.pcmbuffer, read, mp3_arr, MP3_SIZE);
 	}
 	//	mp3_buffer.insert(mp3_buffer.end(), &mp3_arr[0], &mp3_arr[MP3_SIZE]);
+	/**return code     number of bytes output in mp3buf.Can be 0
+		* -1:  mp3buf was too small
+		* -2 : malloc() problem
+		* -3 : lame_init_params() not called
+		* -4 : psycho acoustic problems*/
 
 	std::memcpy(this->_converted.mp3_buffer, mp3_arr, sizeof(unsigned char) * MP3_SIZE);
 	this->_converted.write = write;

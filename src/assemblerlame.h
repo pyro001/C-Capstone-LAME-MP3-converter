@@ -7,9 +7,24 @@
 #include <thread>
 #include <vector>
 #include <iostream>
-#include <future>
 #include <mutex>
 #include<algorithm>
+#include <cstring>
+#include <future>
+#include <functional>
+#include <deque>
+template <class T>
+class MessageQueue
+{
+public:
+	void send(T&& msg);
+	T receive(void);
+private:
+	std::deque<T> _queue;
+	std::mutex _commlock;
+	std::condition_variable _condition;
+};
+
 enum converter_quality
 {
 	perfect = 0,
@@ -76,6 +91,7 @@ public:
 
 private:
 	FILE* _inputfile;
+	std::mutex lck;
 	std::string _input;
 	FILE* _opfile;
 	int _total_blocks;
