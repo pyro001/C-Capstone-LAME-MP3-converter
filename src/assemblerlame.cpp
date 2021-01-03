@@ -174,19 +174,21 @@ assembler::assembler()
 
 assembler::assembler(std::string input, std::string op)
 {
-	this->_input = input;
-	std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
-	_total_blocks = 0;
-	_complete_bocks = 0;
-	_completion_percentage = 0;
 	if (!input.empty() && !op.empty())
 	{
+		this->_input = input;
 		this->_inputfile = fopen(input.c_str(), "rb");
 
 		this->_opfile = fopen(op.c_str(), "wb");
 	}
-	else 
-		perror("ERROR INPUTFILE BLANK");
+	_total_blocks = 0;
+	_complete_bocks = 0;
+	this->_status.completed = 0;
+	this->_status.total = 0;
+	std::ifstream in_file(_input, std::ios::binary);
+	in_file.seekg(0, std::ios::end);
+	int file_size = in_file.tellg();
+	//std::cout << "Size of the file is" << " " << file_size << " " << "bytes" << std::endl;
 
 }
 
