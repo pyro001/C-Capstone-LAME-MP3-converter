@@ -27,7 +27,7 @@ void MessageQueue<T>::send(T&& msg)
 }
 
 
-void assembler::run()// uses 73920 bytes of stack needs heap memory movement
+void assembler::run()// uses 73952 bytes of stack needs heap memory movement
 {
 	this->setWavformat();
 	lameParams _prms = this->get_lame_params(meta);
@@ -77,7 +77,7 @@ void assembler::run()// uses 73920 bytes of stack needs heap memory movement
 	for (auto& i : writefile)
 	{
 		this->_status.completed++;
-		//std::cout << i.write << "\t::\t" << i.order << std::endl;
+		std::cout << i.write << "\t::\t" << i.order << std::endl;
 
 		fwrite((i.mp3_buffer), (i.write), 1, _opfile);
 
@@ -175,7 +175,7 @@ assembler::assembler()
 assembler::assembler(std::string input, std::string op)
 {
 	this->_input = input;
-	//std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
+	std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
 	_total_blocks = 0;
 	_complete_bocks = 0;
 	_completion_percentage = 0;
@@ -185,12 +185,15 @@ assembler::assembler(std::string input, std::string op)
 
 		this->_opfile = fopen(op.c_str(), "wb");
 	}
+	else 
+		perror("ERROR INPUTFILE BLANK");
+
 }
 
 assembler::~assembler()
 {
 	std::lock_guard<std::mutex> lckgrd(lck);
-	//std::cout << "\n DESTRUCTOR ASSEMBLER|N\n";
+	std::cout << "\n DESTRUCTOR ASSEMBLER|N\n";
 	fclose(_inputfile);
 	fclose(_opfile);
 }
