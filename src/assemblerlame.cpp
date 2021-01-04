@@ -91,7 +91,7 @@ status assembler::get_state()
 {
 	auto futuremsg = std::async(std::launch::async, &MessageQueue<status>::receive, &_queue);
 	status resp = futuremsg.get();
-	std::cout <<"Completed " <<resp.completed << "\t: parts out of:\t" << resp.total << std::endl;
+	std::cout <<"Completed file: "+_input <<resp.completed << "\t: parts out of:\t" << resp.total << std::endl;
 	return status(resp);
 }
 
