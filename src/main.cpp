@@ -6,6 +6,7 @@
 #include <future>
 #include <mutex>
 #include "assemblerlame.h"
+#include "taskmanager.h"
 #include <dirent.h>
 int main(int argc, char** argv)
 {
@@ -25,14 +26,14 @@ int main(int argc, char** argv)
 
 	
 	bool done = false;
-	assembler arg123("E:\\C++\\capstone\\CMakeProject1\\src\\testcase.wav","E:\\C++\\capstone\\CMakeProject1\\src\\testcase.mp3");
-	arg123.run();
+	filehandler arg123("E:\\C++\\capstone\\C-Capstone-LAME-MP3-converter\\testfile",1000);
+	arg123.emulate();
 	
 	
 	while (!done)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		status i= arg123.get_state();
+		status i= arg123.thread_handler();
 		if (i.total != 0 && i.total == i.completed)
 			break;
 

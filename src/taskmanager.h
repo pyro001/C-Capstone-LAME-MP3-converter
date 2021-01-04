@@ -25,10 +25,10 @@ public:
 	filehandler();
 	filehandler(std::string address, int _threads_avaliable);
 	~filehandler();
-	void thread_handler(); //updates stdout with the info from threads
+	status thread_handler(); //updates stdout with the info from threads
 	void emulate();//runs all .pcm files and puts them in file_containers
 
-	void handle_assemblers(mp3_file_unit* _file);//the command to run the file_containers
+	void handle_assemblers(assembler* _file);//the command to run the file_containers
 	int get_thread_parts(std::string input);
 	
 
@@ -38,9 +38,11 @@ private:
 	static int _threads_available;
 	status _status;
 	std::vector<std::string> _input_files;
-	std::vector<mp3_file_unit*> _proc_handle;
-	std::condition_variable _condition;
-	MessageQueue <status> _queue;
+	//std::vector<mp3_file_unit*> _proc_handle;
+	std::vector<assembler*> _proc_db;
+	std::condition_variable _condition2;
+	MessageQueue <status> _queue2;
+	std::mutex _lock;
 
 };
 
