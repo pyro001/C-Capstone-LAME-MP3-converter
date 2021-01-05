@@ -23,10 +23,11 @@ int main(int argc, char** argv)
 		 std::string a (argv[1]);
 		 input_path = a;
 	}
-
+	size_t const hardware_concurrency = std::thread::hardware_concurrency();
+	std::cout << "MAX concurrent logical cores::" << hardware_concurrency;
 	
 	bool done = false;
-	filehandler arg123("E:\\C++\\capstone\\C-Capstone-LAME-MP3-converter\\testfile",1000);
+	filehandler arg123(input_path,hardware_concurrency);
 	arg123.emulate();
 	
 	

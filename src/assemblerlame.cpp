@@ -35,8 +35,14 @@ void MessageQueue<T>::send(T&& msg)
 
 void assembler::run()// uses 73952 bytes of stack needs heap memory movement
 {
+	std::thread::id this_id = std::this_thread::get_id();
+	//lck.lock();
+	//std::cout << "\n thread::assembler block " << this_id << "\n";
+	//lck.unlock();
 	if (this->_inputfile)
 	{
+		
+
 		this->setWavformat();
 		lameParams _prms = this->get_lame_params(meta);
 		int read = 1;
@@ -261,6 +267,10 @@ converter::~converter()
 
 converted_mp3 converter::encode_mp3()
 {
+	std::thread::id this_id = std::this_thread::get_id();
+	//lck.lock();
+	//std::cout << "\nthread::encoding MP3 " << this_id << "\n";
+	//lck.unlock();
 	std::lock_guard<std::mutex> lckgrd(lck);
 	lame_t lame = lame_init();
 	lame_set_in_samplerate(lame, (this->_conversion_block._params.samplerate) / 2);
