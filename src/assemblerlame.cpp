@@ -3,7 +3,7 @@
 #include <errno.h>
 template<typename R>
 bool is_ready(std::future<R> const& f)
-{
+{ //courtesy:https://stackoverflow.com/questions/10890242/get-the-status-of-a-stdfuture
 	return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 }
 
@@ -35,10 +35,12 @@ void MessageQueue<T>::send(T&& msg)
 
 void assembler::run()// uses 73952 bytes of stack needs heap memory movement
 {
+	std::lock_guard<std::mutex> lckgrd(lck);
+
 	std::thread::id this_id = std::this_thread::get_id();
-	//lck.lock();
+
 	//std::cout << "\n thread::assembler block " << this_id << "\n";
-	//lck.unlock();
+
 	if (this->_inputfile)
 	{
 		
@@ -133,7 +135,7 @@ status assembler::get_state()
 	status resp = futuremsg.get();
 	std::lock_guard<std::mutex> lckgrd(lck);
 
-	std::cout << "Completed file: " + _input << resp.completed << "\t: parts out of:\t" << resp.total << std::endl;
+	std::cout << "\nCompleted file: " + _input <<"\t"<< resp.completed << " :parts out of: " << resp.total << std::endl;
 	return status(resp);
 }
 
@@ -233,7 +235,7 @@ assembler::~assembler()
 
 converter::converter()
 {
-	std::lock_guard<std::mutex> lckgrd(lck);
+	//std::lock_guard<std::mutex> lckgrd(lck);
 	//std::cout << "\n CONSTRUCTOR ASSEMBLER|N\n";
 }
 
@@ -249,7 +251,7 @@ converter::converter(conversion_block input)
 		this->_converted.order = this->_conversion_block.order;
 
 		converter::set = true;
-		std::lock_guard<std::mutex> lckgrd(lck);
+		//std::lock_guard<std::mutex> lckgrd(lck);
 
 		//std::cout << "\n CONSTRUCTOR ASSEMBLER|Y\n";
 	}

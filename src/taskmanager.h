@@ -29,7 +29,7 @@ public:
 	void emulate();//runs all .pcm files and puts them in file_containers
 
 	void handle_assemblers(assembler* _file);//the command to run the file_containers
-	int get_thread_parts(std::string input);
+
 	
 
 private:
