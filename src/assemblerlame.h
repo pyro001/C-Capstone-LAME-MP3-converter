@@ -108,7 +108,6 @@ private:
 	FILE* _opfile;
 	int _total_blocks;
 	int _complete_bocks;
-	float _completion_percentage;
 	status _status;
 	_wavfmt meta = (_wavfmt)malloc(sizeof(wavFormat));
 

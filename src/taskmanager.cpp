@@ -131,15 +131,6 @@ void filehandler::emulate()
 
 }
 
-int filehandler::get_thread_parts(std::string input)
-{
-	std::lock_guard<std::mutex> lckgrd(_lock);
-	std::ifstream in_file(input, std::ios::binary);
-	in_file.seekg(0, std::ios::end);
-	int file_size = in_file.tellg();
-	//std::cout << "Size of the file is" << " " << file_size << " " << "bytes" << std::endl;
-	return ((file_size / WAV_SIZE) / 4 + 1);
-}
 
 
 
