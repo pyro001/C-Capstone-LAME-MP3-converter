@@ -8,6 +8,8 @@ filehandler::filehandler()
 
 filehandler::filehandler(std::string address, int _threads_avaliable)
 {
+	if (address.back() == '\\' || address.back() == '/')
+		address.pop_back();
 	_status.completed = 0;
 	_status.total = 0;
 	int i = 0;
@@ -16,15 +18,33 @@ filehandler::filehandler(std::string address, int _threads_avaliable)
 	DIR* dp = nullptr;
 
 	dp = opendir(address.c_str());
-	if (dp != nullptr) {
+	if (dp != nullptr)
+	{
 		while ((entry = readdir(dp)))
 		{
 
 			if (strstr(entry->d_name, identifier))
 			{
-				printf("\nwav Found:\t%s\n", entry->d_name);
+				//printf("\nwav Found:\t%s\n", entry->d_name);
 				std::string b(entry->d_name);
-				this->_input_files.emplace_back(address +"\\"+ b);
+				FILE* test;
+				test = fopen((address + "\\" + b).c_str(), "rb");
+				if (test)
+				{
+					this->_input_files.emplace_back(address + "\\" + b);
+					std::cout << "\n" + address + "\\" + b;
+				}
+				else
+				{
+					test = fopen((address + "/" + b).c_str(), "rb");
+					if (test)
+						this->_input_files.emplace_back(address + "/" + b);
+					else
+					{
+						perror("file system unknown");
+					}
+				}
+
 				i++;
 			}
 		}
