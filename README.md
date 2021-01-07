@@ -72,11 +72,11 @@ Requirements:
 3. Compile: `cmake .. && make`
 4. Run it: `./CAPSTONE` "<path\to\file\>"
 ### Testing the Project
-1 .Note that because TurboVNC does not provide audio from Udacity VM's there might be some issues viewing the mp3 output, which in the text format looks like garbage data. 
+-Note that because TurboVNC does not provide audio from Udacity VM's there might be some issues viewing the mp3 output, which in the text format looks like garbage data. 
 
-2. for testing the code C-Capstone-LAME-MP3-converter\testfile has a bunch of sample "wav" files
+-For testing the code C-Capstone-LAME-MP3-converter\testfile has a bunch of sample "wav" files
 
-3. to run `./CAPSTONE "<locationof installation/C-Capstone-LAME-MP3-converter/testfile>"`
+-To run `./CAPSTONE "<locationof installation/C-Capstone-LAME-MP3-converter/testfile>"`
 
 ### Class Structure
 there 4 classes :
