@@ -79,8 +79,12 @@ Requirements:
 -To run `./CAPSTONE "<locationof installation/C-Capstone-LAME-MP3-converter/testfile>"`
 
 ### Class Structure
-there 4 classes :
-1.class converter : this is the smallest building block and converts a tiny chunk of a wav file to the mp3 format
-2.class assembler: this splits the wav file, acquires parameters for lame to work, asynchronously calls the converter units and then compiles the responses into a proper mp3 file
-3.class MessageQueue: this allows the asssembler class to convey its status while the assembler functionality is still running 
-4.class filehandler: this acquires all wav files in the provided folder and asynchronously launches all assembler units to allow all the files to be concurrently converted
+There are 4 classes :
+
+-1.`class converter` : this is the smallest building block and converts a tiny chunk of a wav file to the mp3 format
+
+-2.`class assembler`: this splits the wav file, acquires parameters for lame to work from the file itself, asynchronously calls the converter units and then compiles the responses into a proper mp3 file
+
+-3.`class MessageQueue`: this allows the asssembler class to convey its status while the assembler functionality is still running 
+
+-4.`class filehandler`: this acquires all wav files in the provided folder and asynchronously launches all assembler units to allow all the files to be concurrently converted
